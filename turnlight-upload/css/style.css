@@ -1,0 +1,678 @@
+/* ==================================================================
+   TurnLight – Stylesheet
+   Dunkles, warmes Theme: Bernstein als Markenfarbe, Signalrot nur
+   für den Service-Ruf. Display-Schrift Fraunces, Body-Schrift Inter.
+   ================================================================== */
+
+/* ---------- Design-Tokens ---------- */
+:root{
+  --bg:#0d0b09;            /* Seitengrund, fast schwarz mit Warmstich */
+  --bg-2:#141110;          /* abgesetzte Bänder & Karten */
+  --bg-3:#1c1815;          /* Formularfelder */
+  --ink:#f5efe6;           /* Haupttext */
+  --ink-dim:#b8ae9f;       /* Sekundärtext */
+  --ink-faint:#7d7466;     /* Labels, Fußnoten */
+  --accent:#d9c08c;        /* Markenfarbe: gebürstetes Messing / Champagner */
+  --accent-soft:#f0e3c6;   /* helle Variante für kursive Akzente */
+  --accent-rgb:217,192,140;      /* dieselbe Farbe als Komponenten für rgba() */
+  --accent-soft-rgb:240,227,198;
+  --accent-ink:#1d1708;    /* Text auf gefüllten Akzentflächen */
+  --red:#ff4136;           /* Signalrot – ausschließlich Service-Ruf */
+  --line:rgba(245,239,230,.09);
+  --radius:20px;
+  --font-display:"Fraunces",serif;
+  --font-body:"Inter",system-ui,sans-serif;
+}
+
+/* ---------- Reset & Grundlagen ---------- */
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth;overflow-x:clip}
+body{
+  background:var(--bg);
+  color:var(--ink);
+  font-family:var(--font-body);
+  font-size:17px;
+  line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:clip;
+}
+::selection{background:var(--accent);color:var(--accent-ink)}
+h1,h2,h3{font-family:var(--font-display);font-weight:400;line-height:1.12;letter-spacing:-.01em}
+img{max-width:100%;display:block}
+a{color:inherit;text-decoration:none}
+
+/* ---------- Layout-Bausteine ---------- */
+.wrap{max-width:1180px;margin:0 auto;padding:0 28px}
+section{padding:110px 0;position:relative}
+
+.kicker{
+  display:inline-flex;align-items:center;gap:10px;
+  font-size:12.5px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;
+  color:var(--accent);margin-bottom:22px;
+}
+.kicker::before{content:"";width:26px;height:1px;background:var(--accent);opacity:.7}
+
+.section-title{font-size:clamp(34px,4.6vw,54px);margin-bottom:20px;color:var(--ink)}
+.section-title em{font-style:italic;color:var(--accent-soft)}
+.section-lead{font-size:19px;color:var(--ink-dim);max-width:640px}
+
+/* ---------- Buttons ---------- */
+.btn{
+  display:inline-flex;align-items:center;gap:10px;
+  padding:15px 30px;border-radius:100px;
+  font-weight:600;font-size:15.5px;letter-spacing:.01em;
+  transition:transform .25s ease,box-shadow .25s ease,background .25s ease;
+  cursor:pointer;border:none;font-family:var(--font-body);
+}
+.btn-primary{
+  background:linear-gradient(135deg,#e8d5a8,#c7a86e);
+  color:var(--accent-ink);
+  box-shadow:0 8px 32px rgba(var(--accent-rgb),.28);
+}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 14px 44px rgba(var(--accent-rgb),.42)}
+.btn-ghost{
+  background:transparent;color:var(--ink);
+  border:1px solid rgba(245,239,230,.22);
+}
+.btn-ghost:hover{border-color:rgba(245,239,230,.5);transform:translateY(-2px)}
+.btn .arrow{transition:transform .25s ease}
+.btn:hover .arrow{transform:translateX(4px)}
+
+/* ---------- Navigation ---------- */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+  background:rgba(13,11,9,.72);
+  border-bottom:1px solid transparent;
+  transition:border-color .3s ease;
+}
+nav.scrolled{border-bottom-color:var(--line)}
+.nav-inner{
+  max-width:1180px;margin:0 auto;padding:0 28px;
+  height:76px;display:flex;align-items:center;justify-content:space-between;
+}
+.logo{display:flex;align-items:center;gap:12px}
+/* Bildmarke: Drehpfeil um eine stilisierte Tischlampe.
+   Färbt sich komplett über die Akzent-Tokens mit. */
+.logo-mark{width:40px;height:40px;flex-shrink:0;filter:drop-shadow(0 0 12px rgba(var(--accent-rgb),.38))}
+.logo-mark .lm-arc{fill:none;stroke:var(--accent);stroke-width:2.3;stroke-linecap:round;stroke-linejoin:round}
+.logo-mark .lm-head{fill:var(--accent)}
+.logo-mark .lm-knob{fill:var(--accent-soft)}
+.logo-mark .lm-pointer{fill:var(--ink-dim)}
+.logo-word{font-family:"Poppins",sans-serif;font-weight:600;font-size:21px;letter-spacing:.01em;color:var(--ink);white-space:nowrap}
+.logo-word b{color:var(--accent);font-weight:600}
+/* Im Footer eine Stufe größer */
+.footer-logo .logo-mark{width:54px;height:54px}
+.footer-logo .logo-word{font-size:27px}
+.nav-links{display:flex;gap:34px;font-size:15px;color:var(--ink-dim)}
+.nav-links a{transition:color .2s}
+.nav-links a:hover{color:var(--ink)}
+.nav-cta{padding:11px 22px;font-size:14.5px}
+@media(max-width:900px){.nav-links{display:none}}
+
+/* ---------- Hero ---------- */
+.hero{
+  min-height:100vh;display:flex;align-items:center;
+  padding:150px 0 90px;overflow:hidden;position:relative;
+}
+/* zwei weiche Lichtkegel im Hintergrund – Bernstein oben rechts, Rot unten links */
+.hero::before{
+  content:"";position:absolute;top:-30%;right:-15%;width:900px;height:900px;
+  background:radial-gradient(circle,rgba(var(--accent-rgb),.13) 0%,transparent 62%);
+  pointer-events:none;
+}
+.hero::after{
+  content:"";position:absolute;bottom:-40%;left:-20%;width:800px;height:800px;
+  background:radial-gradient(circle,rgba(255,65,54,.05) 0%,transparent 60%);
+  pointer-events:none;
+}
+.hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:60px;align-items:center}
+.hero h1{font-size:clamp(42px,5.6vw,72px);margin-bottom:26px}
+.hero h1 em{font-style:italic;color:var(--accent-soft)}
+.hero p{font-size:20px;color:var(--ink-dim);max-width:520px;margin-bottom:38px}
+.hero-ctas{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:52px}
+.hero-stats{display:flex;gap:44px;flex-wrap:wrap}
+.hero-stat b{display:block;font-family:var(--font-display);font-size:29px;font-weight:500;color:var(--ink)}
+.hero-stat span{font-size:13.5px;color:var(--ink-faint);letter-spacing:.04em}
+
+/* ---------- Lampen-Demo im Hero ---------- */
+.lamp-stage{
+  position:relative;display:flex;flex-direction:column;align-items:center;
+  user-select:none;-webkit-user-select:none;
+}
+.lamp-hint{
+  margin-top:34px;font-size:14px;color:var(--ink-faint);
+  display:flex;align-items:center;gap:9px;letter-spacing:.03em;
+  transition:opacity .4s;
+}
+.lamp-hint svg{animation:sway 2.4s ease-in-out infinite}
+@keyframes sway{0%,100%{transform:rotate(-14deg)}50%{transform:rotate(14deg)}}
+
+.lamp{
+  position:relative;width:min(500px,100%);aspect-ratio:1.4;cursor:grab;
+  border-radius:28px;overflow:hidden;
+  border:1px solid rgba(245,239,230,.12);
+  box-shadow:0 40px 90px rgba(0,0,0,.55),0 0 80px rgba(var(--accent-rgb),.14);
+  transition:transform .18s ease,box-shadow .5s ease;
+  touch-action:none;
+}
+.lamp:active{cursor:grabbing}
+.lamp.is-red{box-shadow:0 40px 90px rgba(0,0,0,.55),0 0 90px rgba(255,65,54,.22)}
+.lamp-img{
+  position:absolute;inset:0;width:100%;height:100%;
+  object-fit:cover;pointer-events:none;
+}
+/* rote Variante liegt deckungsgleich über der gelben und wird eingeblendet */
+.lamp-img.red{opacity:0;transition:opacity .5s ease}
+.lamp.is-red .lamp-img.red{opacity:1}
+
+.lamp-status{
+  margin-top:22px;height:34px;display:flex;align-items:center;justify-content:center;gap:10px;
+  font-size:15px;font-weight:600;letter-spacing:.05em;
+  opacity:0;transform:translateY(6px);transition:all .4s ease;color:#ff8d84;
+}
+.lamp-status .dot{width:9px;height:9px;border-radius:50%;background:var(--red);box-shadow:0 0 12px var(--red);animation:pulse 1.1s ease-in-out infinite}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.5);opacity:.55}}
+.lamp-stage.active .lamp-status{opacity:1;transform:translateY(0)}
+.lamp-stage.active .lamp-hint{opacity:0}
+
+/* ---------- Laufband ---------- */
+.strip{
+  border-top:1px solid var(--line);border-bottom:1px solid var(--line);
+  padding:26px 0;background:var(--bg-2);overflow:hidden;
+}
+/* Inhalt wird per JS verdoppelt, damit -50% einen nahtlosen Loop ergibt */
+.strip-track{display:flex;gap:70px;width:max-content;animation:scroll 30s linear infinite;white-space:nowrap}
+@keyframes scroll{to{transform:translateX(-50%)}}
+.strip-item{display:flex;align-items:center;gap:12px;font-size:15px;color:var(--ink-dim);letter-spacing:.05em}
+.strip-item::before{content:"✦";color:var(--accent);font-size:12px}
+
+/* ---------- Problem / Lösung ---------- */
+.problem-grid{display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:56px}
+.problem-card{
+  border:1px solid var(--line);border-radius:var(--radius);padding:38px 36px;
+  background:linear-gradient(180deg,rgba(245,239,230,.02),transparent);
+}
+.problem-card h3{font-size:15px;text-transform:uppercase;letter-spacing:.12em;font-family:var(--font-body);font-weight:700;margin-bottom:16px}
+.problem-card.is-problem h3{color:var(--ink-faint)}
+.problem-card.is-solution{border-color:rgba(var(--accent-rgb),.35);background:linear-gradient(180deg,rgba(var(--accent-rgb),.07),transparent)}
+.problem-card.is-solution h3{color:var(--accent)}
+.problem-card p{color:var(--ink-dim);font-size:17px}
+
+/* ---------- So funktioniert's ---------- */
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:26px;margin-top:64px}
+.step{
+  background:var(--bg-2);border:1px solid var(--line);border-radius:var(--radius);
+  position:relative;overflow:hidden;
+  transition:transform .3s ease,border-color .3s ease;
+}
+.step:hover{transform:translateY(-6px);border-color:rgba(var(--accent-rgb),.35)}
+.step-media{position:relative;height:220px;overflow:hidden}
+.step-media img{
+  width:100%;height:100%;object-fit:cover;
+  transition:transform .6s ease;
+}
+.step:hover .step-media img{transform:scale(1.05)}
+/* Verlauf lässt das Bild in den Kartengrund auslaufen */
+.step-media::after{
+  content:"";position:absolute;inset:0;
+  background:linear-gradient(180deg,transparent 55%,var(--bg-2) 100%);
+}
+.step-num{
+  position:absolute;top:18px;left:22px;z-index:2;
+  font-family:var(--font-display);font-size:52px;font-weight:300;font-style:italic;
+  color:rgba(245,239,230,.92);text-shadow:0 2px 16px rgba(0,0,0,.7);
+  line-height:1;
+}
+.step-body{padding:28px 30px 36px}
+.step h3{font-size:24px;margin-bottom:12px}
+.step p{color:var(--ink-dim);font-size:16px}
+
+/* ---------- Vorteile ---------- */
+.features-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:64px}
+.feature{
+  border:1px solid var(--line);border-radius:var(--radius);padding:34px 30px;
+  background:linear-gradient(180deg,rgba(245,239,230,.025),transparent);
+  transition:border-color .3s ease,transform .3s ease;
+}
+.feature:hover{border-color:rgba(var(--accent-rgb),.3);transform:translateY(-4px)}
+.feature-icon{
+  width:48px;height:48px;border-radius:14px;margin-bottom:22px;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(var(--accent-rgb),.1);border:1px solid rgba(var(--accent-rgb),.25);
+  font-size:22px;
+}
+.feature h3{font-size:20.5px;margin-bottom:10px;font-family:var(--font-body);font-weight:600}
+.feature p{color:var(--ink-dim);font-size:15.5px}
+
+/* ---------- Bildergalerie ---------- */
+.gallery{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-top:64px}
+.gallery figure{
+  position:relative;border-radius:var(--radius);overflow:hidden;margin:0;
+  border:1px solid var(--line);
+}
+.gallery .g-wide{grid-column:1/-1}
+.gallery img{
+  width:100%;height:100%;object-fit:cover;display:block;
+  transition:transform .7s ease;
+}
+.gallery .g-wide img{height:460px}
+.gallery figure:not(.g-wide) img{height:340px}
+.gallery figure:hover img{transform:scale(1.04)}
+.gallery figcaption{
+  position:absolute;left:0;right:0;bottom:0;padding:52px 28px 22px;
+  background:linear-gradient(180deg,transparent,rgba(10,8,6,.85));
+  font-size:15px;color:var(--ink);letter-spacing:.02em;
+}
+.gallery figcaption span{display:block;font-size:13px;color:var(--ink-dim);margin-top:2px}
+@media(max-width:960px){
+  .gallery{grid-template-columns:1fr}
+  .gallery .g-wide img,.gallery figure:not(.g-wide) img{height:280px}
+}
+
+/* ---------- Lichtfarben ---------- */
+.colors-section{background:var(--bg-2);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.colors-grid{display:grid;grid-template-columns:1fr 1fr;gap:70px;align-items:center}
+
+/* Die kleine Lampe ist reines CSS: Metallkorpus, farbiger Schirm,
+   roter Sockelring. --pick / --pick-glow setzt der Farbwähler per JS. */
+.mini-lamp-stage{display:flex;justify-content:center;position:relative}
+.mini-lamp{position:relative;width:132px;height:340px}
+.mini-lamp::after{ /* Lichtfleck auf dem Boden */
+  content:"";position:absolute;left:50%;bottom:-18px;transform:translateX(-50%);
+  width:200px;height:22px;border-radius:50%;pointer-events:none;filter:blur(8px);opacity:.55;
+  background:radial-gradient(ellipse,var(--pick-glow,rgba(245,217,66,.6)) 0%,transparent 70%);
+  transition:background .5s ease;
+}
+.mini-glow{ /* Lichthof um den Schirm */
+  position:absolute;left:50%;top:46%;transform:translate(-50%,-50%);
+  width:330px;height:330px;border-radius:50%;pointer-events:none;
+  background:radial-gradient(circle,var(--pick-glow,rgba(245,217,66,.3)) 0%,transparent 62%);
+  opacity:1;transition:background .5s ease;
+}
+.mini-body{ /* gebürsteter Metallkorpus */
+  position:absolute;inset:0;border-radius:9px 9px 8px 8px;
+  background:
+    repeating-linear-gradient(90deg,rgba(255,255,255,.035) 0 1px,transparent 1px 3px),
+    linear-gradient(90deg,#1f2224 0%,#5f656a 9%,#b7bdc1 22%,#f5f7f8 31%,#9ba1a6 44%,#565c61 64%,#8a9096 80%,#3a3e41 92%,#17191b 100%);
+  box-shadow:0 0 0 1px rgba(255,255,255,.16),0 0 0 3px rgba(0,0,0,.55),0 30px 50px rgba(0,0,0,.6);
+}
+.mini-body::before{ /* Deckkappe */
+  content:"";position:absolute;left:0;right:0;top:0;height:14px;border-radius:9px 9px 3px 3px;z-index:2;
+  background:linear-gradient(90deg,#2a2d2f,#a9adb0 18%,#f6f7f7 36%,#b9bcbe 62%,#6b6f72 86%,#2a2d2f);
+  box-shadow:0 1px 0 rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.7);
+}
+.mini-body::after{ /* farbiger Schimmer auf dem Metall, nur in zwei Zonen */
+  content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  background-color:var(--pick,#f5d942);mix-blend-mode:soft-light;opacity:.75;
+  -webkit-mask-image:linear-gradient(180deg,transparent 0,transparent 8%,#000 19%,transparent 31%,transparent 74%,#000 78%,transparent 92%);
+  mask-image:linear-gradient(180deg,transparent 0,transparent 8%,#000 19%,transparent 31%,transparent 74%,#000 78%,transparent 92%);
+  transition:background-color .5s ease;
+}
+.mini-shade{ /* leuchtender Schirm */
+  position:absolute;left:0;right:0;top:20.5%;height:56.7%;overflow:hidden;z-index:1;
+  background-color:var(--pick,#f5d942);
+  box-shadow:inset 0 5px 7px -4px rgba(0,0,0,.55),inset 0 -5px 7px -4px rgba(0,0,0,.55),0 0 0 1px rgba(0,0,0,.35);
+  filter:brightness(1.3) saturate(1.15);
+  transition:background-color .5s ease;
+}
+.mini-shade::before{ /* Zylinder-Rundung quer */
+  content:"";position:absolute;inset:0;
+  background:linear-gradient(90deg,rgba(0,0,0,.38) 0%,rgba(0,0,0,.08) 14%,rgba(255,255,255,.3) 40%,rgba(255,255,255,.12) 58%,rgba(0,0,0,.16) 84%,rgba(0,0,0,.4) 100%);
+}
+.mini-shade::after{ /* Glanzpunkt + Abdunklung an den Kanten */
+  content:"";position:absolute;inset:0;
+  background:radial-gradient(ellipse at 40% 50%,rgba(255,255,255,.35) 0%,rgba(255,255,255,0) 60%),linear-gradient(180deg,rgba(0,0,0,.18) 0%,rgba(0,0,0,0) 22%,rgba(0,0,0,0) 78%,rgba(0,0,0,.22) 100%);
+}
+.mini-ring{ /* roter Sockelring */
+  position:absolute;left:0;right:0;bottom:0;height:9px;border-radius:0 0 8px 8px;z-index:2;
+  background:linear-gradient(90deg,#4d0e0a,#c9302a 40%,#e2463a 55%,#6b130e);
+  box-shadow:0 0 0 1px rgba(0,0,0,.5);
+}
+
+.swatches{display:flex;flex-wrap:wrap;gap:14px;margin-top:36px}
+/* Umbricht die Reihe, braucht die Beschriftung darunter Platz */
+@media(max-width:620px){.swatches{row-gap:30px}}
+.swatch{
+  width:52px;height:52px;border-radius:50%;cursor:pointer;position:relative;
+  border:2px solid transparent;transition:transform .2s ease,border-color .2s ease;
+}
+.swatch:hover{transform:scale(1.12)}
+.swatch.on{border-color:var(--ink);transform:scale(1.12)}
+.swatch::after{ /* Farbname unter dem Kreis */
+  content:attr(data-name);position:absolute;top:110%;left:50%;transform:translateX(-50%);
+  font-size:11.5px;color:var(--ink-faint);white-space:nowrap;opacity:0;transition:opacity .2s;
+}
+.swatch:hover::after,.swatch.on::after{opacity:1}
+
+/* Bedeutung der gewaehlten Signalfarbe */
+.swatch-meaning{
+  margin-top:34px;display:flex;align-items:baseline;gap:12px;
+  font-size:16px;color:var(--ink-dim);
+}
+.swatch-meaning b{
+  font-family:var(--font-display);font-weight:500;font-size:22px;
+  color:var(--pick-ink,var(--accent-soft));transition:color .4s ease;
+}
+.swatch-meaning span{letter-spacing:.01em}
+.color-note{margin-top:52px;padding:22px 26px;border-left:2px solid var(--accent);background:rgba(var(--accent-rgb),.06);border-radius:0 14px 14px 0;font-size:15.5px;color:var(--ink-dim)}
+.color-note b{color:var(--ink)}
+.colors-showcase{margin-top:64px;border-radius:var(--radius);overflow:hidden;border:1px solid var(--line)}
+.colors-showcase img{width:100%;display:block}
+
+/* ---------- Zeitersparnis-Rechner ---------- */
+.roi-card{
+  margin-top:60px;background:var(--bg-2);border:1px solid var(--line);
+  border-radius:26px;padding:54px;display:grid;grid-template-columns:1fr 1fr;gap:60px;
+}
+.roi-controls label{display:block;margin-bottom:36px}
+.roi-label{display:flex;justify-content:space-between;font-size:15px;color:var(--ink-dim);margin-bottom:14px}
+.roi-label output{font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums}
+
+/* --fill setzt das Skript auf den Fortschritt in Prozent */
+/* Das Element ist 34 px hoch, damit es sich mit dem Finger treffen laesst;
+   die Spur wird als 5-px-Band mittig hineingezeichnet, sieht also unveraendert
+   schlank aus. Ein 5 px hohes Eingabefeld waere auf dem Handy unbedienbar. */
+input[type=range]{
+  width:100%;appearance:none;-webkit-appearance:none;
+  height:34px;background-color:transparent;
+  background-image:linear-gradient(90deg,var(--accent) var(--fill,50%),rgba(245,239,230,.14) var(--fill,50%));
+  background-size:100% 5px;background-position:0 50%;background-repeat:no-repeat;
+  outline:none;cursor:pointer;
+}
+input[type=range]::-webkit-slider-runnable-track,
+input[type=range]::-moz-range-track{background:transparent;height:5px;border:none}
+input[type=range]::-webkit-slider-thumb{
+  appearance:none;-webkit-appearance:none;width:24px;height:24px;border-radius:50%;
+  background:var(--accent);border:4px solid var(--accent-ink);
+  box-shadow:0 0 16px rgba(var(--accent-rgb),.6);cursor:grab;
+}
+input[type=range]::-moz-range-thumb{
+  width:24px;height:24px;border-radius:50%;background:var(--accent);
+  border:4px solid var(--accent-ink);box-shadow:0 0 16px rgba(var(--accent-rgb),.6);cursor:grab;
+}
+.roi-results{display:flex;flex-direction:column;justify-content:center;gap:22px}
+.roi-row{
+  display:flex;justify-content:space-between;align-items:baseline;gap:18px;
+  padding-bottom:20px;border-bottom:1px solid var(--line);
+}
+.roi-row b{flex-shrink:0}   /* Zahl nie umbrechen lassen */
+.roi-row span{color:var(--ink-dim);font-size:15.5px}
+.roi-row b{font-family:var(--font-display);font-size:27px;font-weight:500;font-variant-numeric:tabular-nums}
+.roi-row.hero-row b{font-size:42px;color:var(--accent)}
+.roi-row.hero-row{border-bottom:none;padding:8px 0 0}
+.roi-note{font-size:13px;color:var(--ink-faint);margin-top:6px}
+
+/* ---------- Zitat-Band ---------- */
+.quote-band{
+  padding:130px 0;text-align:center;position:relative;overflow:hidden;
+  border-top:1px solid var(--line);border-bottom:1px solid var(--line);
+  background:radial-gradient(ellipse 70% 90% at 50% 110%,rgba(var(--accent-rgb),.12),transparent 70%),var(--bg-2);
+}
+.quote-band blockquote{
+  font-family:var(--font-display);font-size:clamp(26px,3.6vw,42px);
+  font-style:italic;font-weight:300;max-width:850px;margin:0 auto 28px;line-height:1.35;
+}
+.quote-band cite{font-style:normal;font-size:15px;color:var(--ink-faint);letter-spacing:.06em}
+
+/* ---------- CTA-Band ---------- */
+.cta-band{text-align:center}
+.cta-band .btn{margin-top:34px}
+
+/* ---------- Zielgruppen ---------- */
+.audience-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:56px}
+.audience-card{
+  border:1px solid var(--line);border-radius:var(--radius);padding:30px 20px;text-align:center;
+  background:linear-gradient(180deg,rgba(245,239,230,.025),transparent);
+  transition:border-color .3s ease,transform .3s ease;
+}
+.audience-card:hover{border-color:rgba(var(--accent-rgb),.3);transform:translateY(-4px)}
+.audience-card .a-icon{font-size:30px;margin-bottom:14px}
+.audience-card h3{font-size:18px;font-family:var(--font-body);font-weight:600}
+.qr-note{margin-top:52px;padding:26px 30px;border-left:2px solid var(--accent);background:rgba(var(--accent-rgb),.06);border-radius:0 14px 14px 0;font-size:17px;color:var(--ink-dim);max-width:720px}
+.qr-note b{color:var(--ink)}
+@media(max-width:960px){.audience-grid{grid-template-columns:repeat(2,1fr)}}
+
+/* ---------- Praxis-Videos ---------- */
+.video-grid{display:grid;grid-template-columns:repeat(2,minmax(0,340px));justify-content:center;gap:28px;margin-top:56px}
+.video-card{border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);background:#000;aspect-ratio:9/16;box-shadow:0 30px 70px rgba(0,0,0,.45)}
+.video-card video{display:block;width:100%;height:100%;object-fit:cover;background:#000}
+.video-placeholder{
+  position:relative;border-radius:var(--radius);overflow:hidden;
+  border:1px solid var(--line);aspect-ratio:16/10;
+}
+.video-placeholder img{width:100%;height:100%;object-fit:cover;filter:brightness(.5)}
+.video-play{
+  position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;
+}
+.video-play .play-icon{
+  width:60px;height:60px;border-radius:50%;background:rgba(var(--accent-rgb),.92);
+  display:flex;align-items:center;justify-content:center;box-shadow:0 8px 30px rgba(var(--accent-rgb),.4);
+}
+.video-play .play-icon svg{margin-left:3px}
+.video-play span{font-size:13px;letter-spacing:.03em;color:var(--ink-dim);background:rgba(13,11,9,.65);padding:6px 14px;border-radius:100px}
+@media(max-width:700px){.video-grid{grid-template-columns:minmax(0,340px)}}
+
+/* ---------- FAQ ---------- */
+.faq-list{max-width:780px;margin:56px auto 0}
+.faq{border-bottom:1px solid var(--line)}
+.faq summary{
+  padding:26px 0;font-size:19px;font-weight:600;cursor:pointer;list-style:none;
+  display:flex;justify-content:space-between;align-items:center;gap:20px;
+  transition:color .2s;
+}
+.faq summary:hover{color:var(--accent-soft)}
+.faq summary::-webkit-details-marker{display:none}
+/* Plus dreht sich beim Öffnen zum Kreuz */
+.faq summary::after{
+  content:"+";font-family:var(--font-display);font-size:28px;font-weight:300;
+  color:var(--accent);transition:transform .3s ease;flex-shrink:0;
+}
+.faq[open] summary::after{transform:rotate(45deg)}
+.faq p{padding:0 40px 26px 0;color:var(--ink-dim);font-size:16px}
+
+/* ---------- Kontakt ---------- */
+.contact-grid{display:grid;grid-template-columns:1fr 1.15fr;gap:70px;margin-top:60px}
+.contact-info h3{font-size:26px;margin-bottom:16px}
+.contact-info p{color:var(--ink-dim);margin-bottom:34px}
+.contact-line{display:flex;gap:16px;align-items:center;padding:16px 0;border-top:1px solid var(--line);font-size:16px;color:var(--ink-dim)}
+.contact-line a{padding:6px 0;display:inline-block}   /* groesseres Tippziel */
+.contact-line b{color:var(--ink);font-weight:600;min-width:86px;display:inline-block}
+
+form{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.form-field{display:flex;flex-direction:column;gap:8px}
+.form-field.full{grid-column:1/-1}
+.form-field label{font-size:13.5px;font-weight:600;letter-spacing:.04em;color:var(--ink-dim)}
+.form-field input,.form-field select,.form-field textarea{
+  background:var(--bg-3);border:1px solid var(--line);border-radius:13px;
+  padding:15px 17px;color:var(--ink);font-family:var(--font-body);font-size:15.5px;
+  transition:border-color .2s;outline:none;width:100%;
+}
+.form-field input:focus,.form-field select:focus,.form-field textarea:focus{border-color:rgba(var(--accent-rgb),.6)}
+
+/* Regler im Kontaktformular.
+   Die Regel .form-field input setzt oben background/border/padding der
+   Textfelder – das wuerde den Regler zerlegen. Hier also gezielt
+   zuruecknehmen und die Spur erneut zeichnen. */
+/* Regler und Zahlenfeld nebeneinander. Das Zahlenfeld sieht aus wie die
+   uebrigen Formularfelder – als blosse unterstrichene Zahl wurde es nicht als
+   eingebbar erkannt. Seine Hoehe gibt die Zeilenhoehe vor, der Regler dehnt
+   sich darauf aus; dadurch sitzt die Zeile automatisch buendig zum Nachbarfeld. */
+.form-field.is-range .range-row{display:flex;align-items:stretch;gap:12px}
+.form-field.is-range input[type=number]{
+  width:78px;flex:none;text-align:center;
+  font-weight:600;font-variant-numeric:tabular-nums;
+}
+
+.form-field input[type=range]{
+  background-color:transparent;border:none;border-radius:0;padding:0;
+  background-image:linear-gradient(90deg,var(--accent) var(--fill,50%),rgba(245,239,230,.14) var(--fill,50%));
+  background-size:100% 5px;background-position:0 50%;background-repeat:no-repeat;
+  /* Dehnt sich auf die Hoehe des Zahlenfeldes daneben aus. */
+  flex:1;min-width:0;
+}
+.form-field input[type=range]:focus{border:none}
+.form-field textarea{resize:vertical;min-height:110px}
+form .btn{grid-column:1/-1;justify-content:center;margin-top:8px}
+.form-success{
+  grid-column:1/-1;display:none;padding:20px;border-radius:14px;text-align:center;
+  background:rgba(46,160,67,.12);border:1px solid rgba(46,160,67,.4);color:#7ee2a8;font-weight:600;
+}
+.form-error{
+  grid-column:1/-1;display:none;padding:20px;border-radius:14px;text-align:center;
+  background:rgba(255,65,54,.1);border:1px solid rgba(255,65,54,.35);color:#ff8d84;font-weight:600;
+}
+
+/* ---------- Footer ---------- */
+footer{border-top:1px solid var(--line);padding:64px 0 44px;background:var(--bg-2)}
+.footer-grid{display:flex;justify-content:space-between;gap:40px;flex-wrap:wrap;margin-bottom:52px}
+.footer-brand p{color:var(--ink-faint);font-size:14.5px;max-width:300px;margin-top:16px}
+.footer-col h4{font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:18px;font-weight:600}
+.footer-col a{display:block;padding:5px 0;color:var(--ink-dim);font-size:15px;transition:color .2s}
+.footer-col a:hover{color:var(--accent-soft)}
+.footer-bottom{
+  border-top:1px solid var(--line);padding-top:28px;
+  display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;
+  font-size:13.5px;color:var(--ink-faint);
+}
+
+/* ---------- Tab-Bar (nur mobil) ---------- */
+.tabbar{
+  position:fixed;top:auto;bottom:0;left:0;right:0;z-index:120;
+  border-bottom:none;
+  display:none;justify-content:space-around;align-items:stretch;
+  background:rgba(13,11,9,.92);
+  backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+  border-top:1px solid var(--line);
+  padding:8px 6px calc(8px + env(safe-area-inset-bottom,0px));
+}
+.tabbar a{
+  flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;
+  font-size:10.5px;font-weight:600;letter-spacing:.03em;
+  color:var(--ink-faint);transition:color .2s;padding:2px 0;
+}
+.tabbar a svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.tabbar a.on{color:var(--accent)}
+@media(max-width:900px){
+  .tabbar{display:flex}
+  body{padding-bottom:74px}
+  .nav-cta{display:none}
+}
+
+/* ---------- Scroll-Reveal ---------- */
+/* Der Startzustand gilt nur, wenn das Skript laeuft (Klasse js am <html>).
+   Faellt JS aus, bleibt der Inhalt sichtbar statt dauerhaft unsichtbar. */
+.js .reveal{opacity:0;transform:translateY(30px);transition:opacity .8s ease,transform .8s ease}
+.js .reveal.in{opacity:1;transform:none}
+@media(prefers-reduced-motion:reduce){
+  .js .reveal{opacity:1;transform:none;transition:none}
+}
+
+/* ---------- Rechtsseiten ---------- */
+.legal{padding:150px 0 90px}
+.legal h2{font-size:clamp(30px,4vw,44px);margin-bottom:10px}
+.legal .updated{color:var(--ink-faint);font-size:14px;margin-bottom:48px}
+.legal h3{font-family:var(--font-body);font-size:19px;font-weight:600;margin:38px 0 12px}
+.legal p,.legal li{color:var(--ink-dim);font-size:16px;margin-bottom:14px}
+.legal ul{padding-left:20px}
+.legal a.back{display:inline-flex;align-items:center;gap:8px;color:var(--accent-soft);margin-bottom:40px;font-size:15px}
+
+/* ---------- Responsive ---------- */
+/* ---------- Galerie auf schmalen Geräten ---------- */
+@media(max-width:700px){
+  /* Die Motive sind je Platz in einem festen Seitenverhältnis erzeugt
+     (1,62:1 schmal, 2,44:1 breit). Der bisherige starre 280-px-Rahmen
+     schnitt davon auf dem Handy 54 % weg – von der Siebenerreihe blieben
+     drei Lampen übrig. Hier also das Originalverhältnis zeigen. */
+  .gallery figure{background:var(--bg-2)}
+  .gallery figure:not(.g-wide) img{height:auto;aspect-ratio:1.62}
+  .gallery .g-wide img{height:auto;aspect-ratio:2.44}
+  /* Bildunterschrift unter statt auf das Bild: als Overlay würde sie einen
+     nur 130 px hohen Streifen fast vollständig verdecken. */
+  .gallery figcaption{
+    position:static;padding:14px 18px 17px;background:none;
+    border-top:1px solid var(--line);
+  }
+}
+
+/* ---------- Feinschliff fuers Handy ---------- */
+@media(max-width:620px){
+  /* Ohne Hover ist die Dauer-Beschriftung am aktiven Kreis nur im Weg –
+     die Bedeutung steht ohnehin darunter in .swatch-meaning */
+  .swatch.on::after{opacity:0}
+  input[type=range]{height:44px}   /* uebliche Mindestgroesse fuers Tippen */
+  .roi-row{flex-wrap:wrap;gap:4px 16px}
+  .roi-row span{flex:1 1 100%}
+  .roi-row b{margin-left:auto}
+  .roi-row.hero-row b{font-size:34px}
+  .swatch-meaning{margin-top:26px}
+}
+
+@media(max-width:960px){
+  section{padding:80px 0}
+  .hero{padding-top:120px}
+  .hero-grid{grid-template-columns:1fr;gap:70px;text-align:center}
+  .hero p{margin-left:auto;margin-right:auto}
+  .hero-ctas{justify-content:center}
+  .hero-stats{display:grid;grid-template-columns:repeat(2,1fr);gap:30px 16px;justify-items:center}
+  .mini-glow{width:min(330px,85vw);height:min(330px,85vw)}
+  .steps,.features-grid{grid-template-columns:1fr}
+  .colors-grid,.roi-card,.contact-grid,.problem-grid{grid-template-columns:1fr;gap:50px}
+  .roi-card{padding:36px 26px}
+  form{grid-template-columns:1fr}
+}
+
+/* ==================================================================
+   Mediathek – Tabs, Karussell und Lightbox
+   ================================================================== */
+.mt-head{display:flex;align-items:flex-end;justify-content:space-between;gap:24px}
+.mt-arrows{display:flex;gap:10px;margin-bottom:28px}
+.mt-arrow{width:48px;height:48px;border-radius:50%;border:1px solid rgba(245,239,230,.22);background:transparent;color:var(--ink);font-size:26px;line-height:1;cursor:pointer;transition:border-color .2s,background .2s,opacity .2s}
+.mt-arrow:hover:not(:disabled){border-color:var(--accent);background:rgba(var(--accent-rgb),.1)}
+.mt-arrow:disabled{opacity:.3;cursor:default}
+/* passen alle Karten ins Sichtfeld, braucht es keine Pfeile */
+.mt-fits .mt-arrows{visibility:hidden}
+
+.mt-tabs{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 34px}
+.mt-tab{display:inline-flex;align-items:center;gap:8px;padding:10px 18px;border-radius:100px;border:1px solid var(--line);background:var(--bg-2);color:var(--ink-dim);font:500 14.5px var(--font-body);cursor:pointer;transition:color .2s,border-color .2s,background .2s}
+.mt-tab span{font-size:12px;color:var(--ink-faint)}
+.mt-tab:hover{color:var(--ink);border-color:rgba(245,239,230,.25)}
+.mt-tab.on{background:rgba(var(--accent-rgb),.12);border-color:rgba(var(--accent-rgb),.55);color:var(--accent-soft)}
+.mt-tab.on span{color:var(--accent)}
+
+.mt-track{display:flex;gap:20px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;padding-bottom:4px}
+.mt-track::-webkit-scrollbar{display:none}
+.mt-card{position:relative;flex:0 0 300px;aspect-ratio:4/5;border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);background:#000;padding:0;cursor:pointer;scroll-snap-align:start;color:var(--ink);text-align:left;font-family:var(--font-body)}
+.mt-card img,.mt-card video{width:100%;height:100%;object-fit:cover;display:block;transition:transform .6s ease;pointer-events:none}
+.mt-card:hover img,.mt-card:hover video{transform:scale(1.05)}
+.mt-card:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.mt-cap{position:absolute;left:0;right:0;bottom:0;padding:48px 20px 18px;background:linear-gradient(transparent,rgba(0,0,0,.82))}
+.mt-cap b{display:block;font-family:var(--font-display);font-weight:400;font-size:20px;line-height:1.2}
+.mt-cap small{display:block;font-size:13px;color:var(--ink-dim);margin-top:3px;line-height:1.4}
+/* Play-Button für Video-Karten: Kreis + CSS-Dreieck */
+.mt-play{position:absolute;top:50%;left:50%;width:62px;height:62px;margin:-31px 0 0 -31px;border-radius:50%;background:rgba(13,11,9,.55);border:1px solid rgba(var(--accent-soft-rgb),.6);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);transition:transform .25s}
+.mt-play::after{content:"";position:absolute;left:25px;top:20px;border-style:solid;border-width:11px 0 11px 17px;border-color:transparent transparent transparent var(--accent-soft)}
+.mt-card:hover .mt-play{transform:scale(1.08)}
+
+.mt-box{border:0;padding:0;margin:0;width:100vw;height:100vh;max-width:none;max-height:none;background:rgba(8,7,6,.94);color:var(--ink)}
+.mt-box::backdrop{background:rgba(8,7,6,.94)}
+.mt-box[open]{display:flex;align-items:center;justify-content:center}
+.mt-box-stage{width:100%;height:100%;display:flex;align-items:center;justify-content:center;padding:70px 90px 100px}
+.mt-box-stage img,.mt-box-stage video{max-width:100%;max-height:100%;border-radius:14px;box-shadow:0 30px 80px rgba(0,0,0,.6);background:#000}
+.mt-box-close,.mt-box-prev,.mt-box-next{position:absolute;z-index:2;width:52px;height:52px;border-radius:50%;border:1px solid rgba(245,239,230,.22);background:rgba(13,11,9,.6);color:var(--ink);font-size:30px;line-height:1;cursor:pointer}
+.mt-box-close{top:18px;right:18px}
+.mt-box-prev{left:20px;top:50%;margin-top:-26px}
+.mt-box-next{right:20px;top:50%;margin-top:-26px}
+.mt-box-close:hover,.mt-box-prev:hover,.mt-box-next:hover{border-color:var(--accent)}
+.mt-box.single .mt-box-prev,.mt-box.single .mt-box-next{display:none}
+.mt-box-cap{position:absolute;left:0;right:0;bottom:26px;text-align:center;font-size:15px;color:var(--ink-dim);padding:0 20px}
+.mt-box-cap b{color:var(--ink);font-weight:600}
+.mt-box-cap em{display:block;font-style:normal;font-size:12.5px;color:var(--ink-faint);margin-top:4px;letter-spacing:.08em}
+@media(max-width:700px){
+  .mt-arrows{display:none}
+  .mt-card{flex-basis:76vw}
+  .mt-box-stage{padding:64px 12px 110px}
+  .mt-box-prev,.mt-box-next{top:auto;bottom:70px;margin:0;width:44px;height:44px}
+  .mt-box-cap{bottom:22px}
+  .mt-box-cap span{display:none}
+}

@@ -22,9 +22,9 @@
 window.TURNLIGHT_MEDIEN = [
 
   // ---------- Kategorie: Fotos ----------
-  { typ: "bild",  datei: "medien/restaurant-abend.jpg?v=19",  titel: "Am Abend",         text: "Warmes Licht zwischen Gedeck und Blumen.", kategorie: "Fotos" },
-  { typ: "bild",  datei: "medien/restaurant-tisch.jpg?v=19",  titel: "Service bitte",    text: "Ein Dreh auf Rot – im Raum nicht zu übersehen.", kategorie: "Fotos" },
-  { typ: "bild",  datei: "medien/cafe-fliesentisch.jpg?v=19", titel: "Alles ok",         text: "Grün heißt: alles in Ordnung am Tisch.",   kategorie: "Fotos" },
+  { typ: "bild",  datei: "medien/restaurant-abend.jpg?v=20",  titel: "Am Abend",         text: "Warmes Licht zwischen Gedeck und Blumen.", kategorie: "Fotos" },
+  { typ: "bild",  datei: "medien/restaurant-tisch.jpg?v=20",  titel: "Service bitte",    text: "Ein Dreh auf Rot – im Raum nicht zu übersehen.", kategorie: "Fotos" },
+  { typ: "bild",  datei: "medien/cafe-fliesentisch.jpg?v=20", titel: "Alles ok",         text: "Grün heißt: alles in Ordnung am Tisch.",   kategorie: "Fotos" },
 
   // ---------- Kategorie: Videos ----------
   // Ausgesetzt: die Videos stammten aus der Vorlage und liegen jetzt in

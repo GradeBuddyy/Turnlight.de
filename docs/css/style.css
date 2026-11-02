@@ -83,10 +83,22 @@ nav{
   position:fixed;top:0;left:0;right:0;z-index:100;
   backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
   background:rgba(13,11,9,.72);
-  border-bottom:1px solid transparent;
-  transition:border-color .3s ease;
+  /* Trennlinie als Innenschatten, nicht als Rand. Ein 1px-Rand bekommt eine
+     eigene Pixelzeile, die der Browser getrennt zusammensetzt – ueber dem
+     randlosen Film zeichnete sich das selbst bei transparentem Rand als
+     dunkler Strich quer durch die Lampe ab. */
+  box-shadow:inset 0 -1px 0 transparent;
+  transition:box-shadow .3s ease,background .3s ease;
 }
-nav.scrolled{border-bottom-color:var(--line)}
+nav.scrolled{box-shadow:inset 0 -1px 0 var(--line)}
+/* Ueber dem randlosen Farbfilm: keine Linie, kein Balken – stattdessen ein
+   Verlauf, der nach unten auslaeuft. Die Navigation bleibt lesbar, ohne dem
+   Bild eine Kante zu verpassen. */
+nav.ueber-film{
+  box-shadow:none;
+  background:linear-gradient(to bottom,rgba(13,11,9,.88) 0,rgba(13,11,9,.55) 55%,rgba(13,11,9,0) 100%);
+  backdrop-filter:none;-webkit-backdrop-filter:none;
+}
 .nav-inner{
   max-width:1180px;margin:0 auto;padding:0 28px;
   height:76px;display:flex;align-items:center;justify-content:space-between;
@@ -121,8 +133,11 @@ nav.scrolled{border-bottom-color:var(--line)}
   background:radial-gradient(circle,rgba(var(--accent-rgb),.13) 0%,transparent 62%);
   pointer-events:none;
 }
+/* Der rote Kegel sass so tief, dass overflow:hidden ihn genau an seiner
+   hellsten Stelle abschnitt – am unteren Heroende stand dadurch eine Kante.
+   Jetzt laeuft er innerhalb des Heros aus und wird gar nicht erst beschnitten. */
 .hero::after{
-  content:"";position:absolute;bottom:-40%;left:-20%;width:800px;height:800px;
+  content:"";position:absolute;bottom:-8%;left:-20%;width:800px;height:800px;
   background:radial-gradient(circle,rgba(255,65,54,.05) 0%,transparent 60%);
   pointer-events:none;
 }
@@ -131,9 +146,6 @@ nav.scrolled{border-bottom-color:var(--line)}
 .hero h1 em{font-style:italic;color:var(--accent-soft)}
 .hero p{font-size:20px;color:var(--ink-dim);max-width:520px;margin-bottom:38px}
 .hero-ctas{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:52px}
-.hero-stats{display:flex;gap:44px;flex-wrap:wrap}
-.hero-stat b{display:block;font-family:var(--font-display);font-size:29px;font-weight:500;color:var(--ink)}
-.hero-stat span{font-size:13.5px;color:var(--ink-faint);letter-spacing:.04em}
 
 /* ---------- Lampen-Demo im Hero ---------- */
 .lamp-stage{
@@ -175,6 +187,95 @@ nav.scrolled{border-bottom-color:var(--line)}
 @keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.5);opacity:.55}}
 .lamp-stage.active .lamp-status{opacity:1;transform:translateY(0)}
 .lamp-stage.active .lamp-hint{opacity:0}
+
+/* ==================================================================
+   Farbfilm – scrollgesteuerte Bildfolge
+   Der Abschnitt ist absichtlich hoch: seine Höhe minus einem Bildschirm
+   ist die Strecke, über die gescrubbt wird. Darin klebt eine Bühne von
+   genau einer Bildschirmhöhe.
+   ================================================================== */
+.filmstrip{height:420vh;position:relative;background:var(--bg)}
+.film-sticky{position:sticky;top:0;height:100vh;overflow:hidden}
+
+/* Randlos statt Rahmen.
+   Vorher sass das Bild als eingerueckter Kasten in der Buehne. Sein
+   Hintergrund stammt aus dem Video und trifft den Seitenton nie exakt –
+   also zeichnete sich oben und rechts ein Rechteck ab. Jetzt reicht die
+   Leinwand ueber alle vier Kanten hinaus: wo kein Rand ist, ist auch keine
+   Kante. Welcher Ausschnitt darin liegt, rechnet farbfilm.js. */
+#filmCanvas,.film-ersatz{
+  position:absolute;top:0;left:0;width:100%;height:100%;display:block;
+  /* Am Ende des Abschnitts loest sich die Buehne vom Bildschirmrand und
+     schiebt sich nach oben weg. Ohne diesen kurzen Auslauf wuerde das Bild
+     dabei quer durchgeschnitten – die letzten Prozent genuegen, damit aus
+     dem Schnitt ein Uebergang wird. */
+  -webkit-mask-image:linear-gradient(to bottom,#000 96%,transparent 100%);
+  mask-image:linear-gradient(to bottom,#000 96%,transparent 100%);
+}
+
+/* Schleier nur links, wo der Text steht. Dort ist im Bild ohnehin nur
+   Hintergrund – die Lampe steht in der Mitte und bleibt unangetastet. */
+.film-schleier{
+  position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(100deg,
+    rgba(13,11,9,.94) 0,rgba(13,11,9,.78) 24%,rgba(13,11,9,.30) 44%,rgba(13,11,9,0) 58%);
+}
+
+.film-text{position:absolute;left:0;right:0;bottom:clamp(54px,9vh,104px)}
+.film-text .kicker{margin-bottom:26px}
+/* Der Farbname traegt die gerade gezeigte Signalfarbe – --signal setzt das Skript */
+.film-farbe{
+  font-family:var(--font-display);font-size:clamp(34px,4.4vw,52px);
+  line-height:1.1;color:var(--signal,var(--accent-soft));
+  transition:color .45s ease;margin-bottom:14px;
+}
+.film-farbe.wechsel{animation:filmAn .45s ease}
+@keyframes filmAn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.film-bedeutung{font-size:18px;color:var(--ink-dim);max-width:400px;min-height:3.2em}
+
+.film-fortschritt{margin-top:34px;max-width:400px;height:3px;border-radius:2px;background:rgba(245,239,230,.12);overflow:hidden}
+.film-balken{height:100%;width:0;background:var(--signal,var(--accent));transition:width .1s linear,background .45s ease}
+.film-hinweis{margin-top:14px;font-size:13.5px;color:var(--ink-faint);letter-spacing:.04em;transition:opacity .4s}
+
+/* Hohe, schmale Bildschirme: ein formatfuellender Ausschnitt waere hier so
+   stark vergroessert, dass vom Arm nichts uebrig bliebe. Deshalb laeuft das
+   Bild breiter als der Bildschirm und sitzt buendig oben – links, rechts und
+   oben also ebenfalls ohne Kante –, der Text steht darunter.
+
+   Die Hoehe richtet sich nach dem Bildschirm, nicht nach der Breite: sonst
+   bleibt auf kleinen Geraeten unter dem Bild kein Platz fuer den Text. Die
+   Breite folgt daraus ueber das Seitenverhaeltnis 16:9 und ist nie schmaler
+   als der Bildschirm, damit der Rand in jedem Fall ueberlaufen wird. */
+@media(max-width:960px) and (max-aspect-ratio:1/1){
+  .filmstrip{height:360vh}
+  :root{
+    --film-breite:max(100vw, min(46vh, 96.75vw) * 1.7778);
+    --film-hoehe:calc(var(--film-breite) * .5625);
+  }
+  #filmCanvas,.film-ersatz{
+    width:var(--film-breite);
+    left:calc((100vw - var(--film-breite)) / 2);
+    height:var(--film-hoehe);
+    /* Nur die letzten Prozent: dort endet die Spiegelung des Lampenfusses. */
+    -webkit-mask-image:linear-gradient(to bottom,#000 92%,transparent 100%);
+    mask-image:linear-gradient(to bottom,#000 92%,transparent 100%);
+  }
+  .film-schleier{display:none}
+  .film-text{top:calc(var(--film-hoehe) + 4vh);bottom:auto}
+  .film-bedeutung{max-width:none;min-height:4.2em}
+  .film-fortschritt{margin-top:24px;max-width:none}
+}
+
+/* Wer reduzierte Bewegung eingestellt hat, bekommt keinen 4-Bildschirm-Abschnitt,
+   der das Scrollen vereinnahmt, sondern ein ruhiges Standbild. */
+@media(prefers-reduced-motion:reduce){
+  .filmstrip{height:auto;padding:0 0 100px}
+  .film-sticky{position:static;height:auto;overflow:visible}
+  #filmCanvas,.film-ersatz{position:relative;left:0;width:100%;height:auto;aspect-ratio:16/9;-webkit-mask-image:none;mask-image:none}
+  .film-schleier{display:none}
+  .film-text{position:static;top:auto;margin-top:38px}
+  .film-hinweis,.film-fortschritt{display:none}
+}
 
 /* ---------- Laufband ---------- */
 .strip{
@@ -559,6 +660,43 @@ footer{border-top:1px solid var(--line);padding:64px 0 44px;background:var(--bg-
   .nav-cta{display:none}
 }
 
+/* ---------- Knopf zum Weiterscrollen ---------- */
+/* Sichtbar, solange nicht gescrollt wird. Er liegt unter der Tab-Leiste
+   (z-index 120), damit er sie nie überdeckt, und auf schmalen Geräten
+   oberhalb von ihr – inklusive der Geräteleiste unten am Bildschirm. */
+.runter{
+  position:fixed;z-index:110;
+  right:clamp(18px,2.4vw,34px);
+  bottom:clamp(18px,2.4vw,34px);
+  width:52px;height:52px;border-radius:50%;
+  display:grid;place-items:center;
+  background:rgba(13,11,9,.72);
+  backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+  border:1px solid var(--line);
+  color:var(--accent-soft);cursor:pointer;
+  opacity:0;transform:translateY(10px);pointer-events:none;
+  transition:opacity .35s ease,transform .35s ease,border-color .25s ease,color .25s ease;
+}
+.runter.da{opacity:1;transform:none;pointer-events:auto}
+.runter:hover{border-color:rgba(var(--accent-rgb),.5);color:var(--accent)}
+.runter:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.runter svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.runter .pfeil{animation:runterWink 2.4s ease-in-out infinite}
+@keyframes runterWink{0%,100%{transform:none}50%{transform:translateY(2.5px)}}
+
+@media(max-width:900px){
+  .runter{
+    width:46px;height:46px;
+    bottom:calc(86px + env(safe-area-inset-bottom,0px));
+    right:16px;
+  }
+}
+/* Ohne Bewegung: kein Wippen, kein Hochschieben – nur ein weiches Aufblenden. */
+@media(prefers-reduced-motion:reduce){
+  .runter{transform:none;transition:opacity .25s ease}
+  .runter .pfeil{animation:none}
+}
+
 /* ---------- Scroll-Reveal ---------- */
 /* Der Startzustand gilt nur, wenn das Skript laeuft (Klasse js am <html>).
    Faellt JS aus, bleibt der Inhalt sichtbar statt dauerhaft unsichtbar. */
@@ -614,7 +752,6 @@ footer{border-top:1px solid var(--line);padding:64px 0 44px;background:var(--bg-
   .hero-grid{grid-template-columns:1fr;gap:70px;text-align:center}
   .hero p{margin-left:auto;margin-right:auto}
   .hero-ctas{justify-content:center}
-  .hero-stats{display:grid;grid-template-columns:repeat(2,1fr);gap:30px 16px;justify-items:center}
   .mini-glow{width:min(330px,85vw);height:min(330px,85vw)}
   .steps,.features-grid{grid-template-columns:1fr}
   .colors-grid,.roi-card,.contact-grid,.problem-grid{grid-template-columns:1fr;gap:50px}

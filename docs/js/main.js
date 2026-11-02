@@ -19,9 +19,61 @@ if (KEY_FEHLT) {
   );
 }
 
-/* ---------- Nav: Trennlinie erscheint beim Scrollen ---------- */
+/* ---------- Nav: Trennlinie erscheint beim Scrollen ----------
+   Ausnahme ist der Farbfilm: der laeuft randlos bis unter die Nav, und eine
+   Trennlinie quer durchs Bild waere genau die Kante, die dort nicht hingehoert.
+   Solange er hinter der Nav steht, loest sie sich deshalb ins Bild auf. */
 const nav = document.getElementById('nav');
-addEventListener('scroll', () => nav.classList.toggle('scrolled', scrollY > 10), { passive: true });
+const film = document.getElementById('farbfilm');
+
+function navPruefen() {
+  nav.classList.toggle('scrolled', scrollY > 10);
+  if (!film) return;
+  const r = film.getBoundingClientRect();
+  nav.classList.toggle('ueber-film', r.top <= 0 && r.bottom > 0);
+}
+addEventListener('scroll', navPruefen, { passive: true });
+navPruefen();
+
+/* ---------- Knopf zum Weiterscrollen ----------
+   Er soll da sein, wenn gerade nicht gescrollt wird, und aus dem Weg gehen,
+   sobald es weitergeht. Deshalb kein Dauerzustand, sondern eine Ruhefrist:
+   jedes Scrollereignis blendet ihn aus und setzt die Frist neu.
+
+   Am Seitenende bleibt er weg – dort gaebe es nichts mehr zu zeigen, und ein
+   Knopf, der nichts tut, ist schlimmer als keiner. */
+const runter = document.getElementById('runter');
+if (runter) {
+  const RUHE = 900;   // ms ohne Scrollen, bis er auftaucht
+  const REST = 140;   // ab so wenig Restweg lohnt sich der Sprung nicht mehr
+  let frist;
+
+  const restWeg = () =>
+    document.documentElement.scrollHeight - window.innerHeight - window.scrollY;
+
+  function pruefen() {
+    runter.classList.toggle('da', restWeg() > REST);
+  }
+
+  function verstecken() {
+    runter.classList.remove('da');
+    clearTimeout(frist);
+    frist = setTimeout(pruefen, RUHE);
+  }
+
+  addEventListener('scroll', verstecken, { passive: true });
+  addEventListener('resize', verstecken, { passive: true });
+  frist = setTimeout(pruefen, RUHE);
+
+  runter.addEventListener('click', () => {
+    /* Knapp unter einer Bildschirmhoehe: so bleibt immer ein Streifen des
+       Vorherigen stehen und man verliert den Faden nicht. Ein Sprung zum
+       naechsten Abschnitt waere im Farbfilm fatal – der ist vier Bildschirme
+       hoch und wuerde komplett uebersprungen. */
+    const weich = !matchMedia('(prefers-reduced-motion: reduce)').matches;
+    scrollBy({ top: Math.round(window.innerHeight * 0.85), behavior: weich ? 'smooth' : 'auto' });
+  });
+}
 
 /* ---------- Scroll-Reveal ---------- */
 /* Nachtragen, was beim Hereinscrollen uebersprungen wurde.

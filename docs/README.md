@@ -79,8 +79,10 @@ sind daraus gerendert. Nach einer Änderung am SVG neu erzeugen:
 
 ## Was noch zu erledigen ist
 
-- **Impressum-Anschrift** fehlt noch (siehe Rechtsseiten). E-Mail und
-  Instagram sind eingetragen.
+- **AGB-Klauseln fehlen** – Vertragspartner steht in § 1, die zwölf
+  Paragrafen sind leer. Impressum und Datenschutz sind vollständig.
+- **Offen im Impressum, falls zutreffend:** Rechtsform (bei UG/GmbH zusätzlich
+  Handelsregister und Registernummer), Umsatzsteuer-ID, Telefonnummer.
 - **Formular ist noch nicht scharf geschaltet** – siehe „Kontaktformular".
 - **Rechtsseiten:** Impressum, Datenschutz und AGB enthalten Platzhalter –
   vor einem Livegang ausfüllen, AGB anwaltlich prüfen lassen.
@@ -173,6 +175,37 @@ Vier Eigenheiten, die beim Ändern leicht wieder kaputtgehen:
 - **Farbkreise** brauchen unter 620 px `row-gap:30px`, sonst ragt die
   Beschriftung des aktiven Kreises in die zweite Reihe. Dort ist sie ohnehin
   ausgeblendet, weil die Bedeutung darunter in `.swatch-meaning` steht.
+
+## Farbfilm (scrollgesteuert)
+
+Direkt unter dem Hero läuft eine scrollgesteuerte Bildfolge aus 240
+Einzelbildern (`img/film/`, 900 px, WebP, zusammen rund 1 MB). Die
+Scrollposition bestimmt den Frame, daneben stehen Überschrift und Erklärung.
+
+**Der Hero hat keine Kennzahlen mehr** – die vier Werte (16 h, 7 Signalfarben,
+IP65, 0 Installation) stehen jetzt als Abschnitte im Film, an den Stellen, an
+denen das Video sie zeigt.
+
+Vier Dinge, die beim nächsten Videotausch wieder anfallen:
+
+- **Der Text im Video ist entfernt.** Das gelieferte Video hatte Schrift
+  eingebrannt – mit Fehlern: „Füer draussen und drinnen". In den Frames 138
+  bis 228 wird deshalb die linke Bildhälfte (x < 515) auf den Hintergrund
+  gesetzt. Dieselben Aussagen stehen korrekt als HTML daneben.
+- **Freigestellt, aber ohne Alphakanal.** Der Videohintergrund wird gegen die
+  Seitenfarbe getauscht statt transparent gemacht: WebP mit Alpha kostete
+  9 MB statt 1 MB bei gleichem Aussehen. Folge: Die Hintergrundfarbe des
+  Abschnitts ist in den Bildern eingebacken – ändert sich `--bg`, müssen die
+  Frames neu erzeugt werden.
+- **Die Kanten der Leinwand laufen weich aus** (`mask-image`). Nötig, weil
+  WebP den Ton nicht exakt trifft: Eine reine Fläche rgb(13,11,9) kommt als
+  (12,12,12) zurück. Ohne den Verlauf zeichnete sich ein Rechteck ab.
+- **Die Abschnitte** stehen in `js/farbfilm.js` als `ABSCHNITTE` und sind am
+  Video ausgemessen: Farbwechsel auf Rot bei Frame 52, Textkarten ab 138.
+
+**Verifiziert wird per Headless-Chrome über das Debug-Protokoll**, nicht im
+Vorschaufenster – dort feuern weder `requestAnimationFrame` noch
+Scroll-Ereignisse, der Scrub lässt sich damit nicht prüfen.
 
 ## Signalfarben
 

@@ -23,7 +23,7 @@
   const elHinweis = document.getElementById('filmHinweis');
 
   const ANZAHL = 240;
-  const pfad = i => `img/film/f${String(i).padStart(3, '0')}.webp?v=27`;
+  const pfad = i => `img/film/f${String(i).padStart(3, '0')}.webp?v=28`;
 
   /* Abschnitte, ausgemessen am Video (Frame-Bereiche, 1-basiert).
      Die Grenzen stammen aus der gemessenen Bandfarbe, nicht aus Schätzung. */

@@ -813,3 +813,7 @@ footer{border-top:1px solid var(--line);padding:64px 0 44px;background:var(--bg-
   .mt-box-cap{bottom:22px}
   .mt-box-cap span{display:none}
 }
+
+/* Koederfeld des Kontaktformulars: muss im Dokument stehen, damit ein Bot es
+   findet, und darf fuer niemanden sonst existieren. */
+.honig{position:absolute;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none}

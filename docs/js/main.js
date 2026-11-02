@@ -4,20 +4,14 @@
    Zeitersparnis-Rechner · Scrollspy der mobilen Tab-Bar · Kontaktformular
    ================================================================== */
 
-/* Access Key von https://web3forms.com – dort die eigene Empfängeradresse
-   eintragen, der Key kommt per Mail. Ohne gültigen Key wird KEINE Nachricht
-   zugestellt: der Versand schlägt fehl und das Formular zeigt stattdessen
-   den Hinweis mit der Mailadresse. */
-const WEB3FORMS_KEY = 'HIER-EIGENEN-ACCESS-KEY-EINTRAGEN';
-const KEY_FEHLT = !WEB3FORMS_KEY || WEB3FORMS_KEY.startsWith('HIER-');
-
-if (KEY_FEHLT) {
-  console.warn(
-    '[TurnLight] Kontaktformular ist NICHT scharf geschaltet: in js/main.js ' +
-    'steht noch der Platzhalter statt eines Web3Forms-Access-Keys. ' +
-    'Abgeschickte Nachrichten kommen nirgends an.'
-  );
-}
+/* Zustellung des Kontaktformulars über FormSubmit – so braucht die Seite
+   keinen eigenen Mailserver und kein Konto bei einem Formulardienst.
+   Beim allerersten Absenden schickt FormSubmit eine Bestaetigungsmail an die
+   Adresse unten; erst nach dem Klick auf den Link darin kommen Nachrichten an.
+   Die Adresse steht ohnehin sichtbar auf der Seite, hier verraet sie nichts
+   Neues. */
+const EMPFAENGER = 'turnlight.de@gmail.com';
+const FORM_ZIEL = 'https://formsubmit.co/ajax/' + EMPFAENGER;
 
 /* ---------- Nav: Trennlinie erscheint beim Scrollen ----------
    Ausnahme ist der Farbfilm: der laeuft randlos bis unter die Nav, und eine
@@ -289,7 +283,7 @@ const spy = new IntersectionObserver(entries => {
 });
 
 /* ---------- Kontaktformular ----------
-   Versand über Web3Forms, damit kein eigener Mailserver nötig ist. */
+   Versand über FormSubmit, damit kein eigener Mailserver nötig ist. */
 document.getElementById('contactForm').addEventListener('submit', async e => {
   e.preventDefault();
   const form = e.target;
@@ -299,14 +293,21 @@ document.getElementById('contactForm').addEventListener('submit', async e => {
   successEl.style.display = 'none';
   errorEl.style.display = 'none';
 
+  /* Der Koeder: ein fuer Menschen unsichtbares Feld. Wer es ausfuellt, ist
+     keiner – FormSubmit wirft solche Einsendungen lautlos weg. */
+  const koeder = document.getElementById('fHoney').value;
+
   const biz = document.getElementById('fBiz').value;
+  const mail = document.getElementById('fMail').value;
   const payload = {
-    access_key: WEB3FORMS_KEY,
-    subject: `Kontaktanfrage über TurnLight Website – ${biz}`,
-    from_name: 'TurnLight Website',
+    _subject: `Kontaktanfrage über TurnLight Website – ${biz}`,
+    _template: 'table',
+    _captcha: 'false',
+    _honey: koeder,
+    /* Damit eine Antwort direkt im Postfach an den Absender geht. */
+    email: mail,
     Name: document.getElementById('fName').value,
     Betrieb: biz,
-    'E-Mail': document.getElementById('fMail').value,
     Telefon: document.getElementById('fPhone').value,
     Stadt: document.getElementById('fCity').value,
     /* Massgeblich ist das Eingabefeld – es kann ueber den Reglerbereich
@@ -315,29 +316,27 @@ document.getElementById('contactForm').addEventListener('submit', async e => {
     Nachricht: document.getElementById('fMsg').value,
   };
 
-  if (KEY_FEHLT) {
-    /* Kein Rundweg über einen Dienst, der die Anfrage ohnehin ablehnt –
-       und die Daten des Absenders verlassen den Rechner gar nicht erst. */
-    errorEl.style.display = 'block';
-    return;
-  }
-
   const originalBtnHtml = submitBtn.innerHTML;
   submitBtn.disabled = true;
   submitBtn.textContent = 'Wird gesendet …';
 
   try {
-    const res = await fetch('https://api.web3forms.com/submit', {
+    const res = await fetch(FORM_ZIEL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
       body: JSON.stringify(payload),
     });
     const data = await res.json();
-    if (!res.ok || !data.success) throw new Error(data.message || 'Senden fehlgeschlagen');
+    /* FormSubmit antwortet mit der Zeichenkette "true", nicht mit einem
+       Wahrheitswert – ein lockerer Vergleich waere hier eine Falle. */
+    if (!res.ok || String(data.success) !== 'true') {
+      throw new Error(data.message || 'Senden fehlgeschlagen');
+    }
     successEl.style.display = 'block';
     submitBtn.style.display = 'none';
     form.reset();
   } catch (err) {
+    console.error('[TurnLight] Kontaktformular:', err);
     errorEl.style.display = 'block';
     submitBtn.disabled = false;
     submitBtn.innerHTML = originalBtnHtml;

@@ -4,14 +4,63 @@
    Zeitersparnis-Rechner · Scrollspy der mobilen Tab-Bar · Kontaktformular
    ================================================================== */
 
-/* Zustellung des Kontaktformulars über FormSubmit – so braucht die Seite
-   keinen eigenen Mailserver und kein Konto bei einem Formulardienst.
-   Beim allerersten Absenden schickt FormSubmit eine Bestaetigungsmail an die
-   Adresse unten; erst nach dem Klick auf den Link darin kommen Nachrichten an.
-   Die Adresse steht ohnehin sichtbar auf der Seite, hier verraet sie nichts
-   Neues. */
+/* Zustellung des Kontaktformulars. Die Seite liegt auf GitHub Pages und hat
+   keinen eigenen Mailserver, also uebernimmt das ein Formulardienst.
+   Zwei davon sind hinterlegt: faellt einer aus - und das kommt bei Gratis-
+   diensten vor -, wird der naechste versucht. Scheitern beide, bietet das
+   Formular die Anfrage als fertige Mail an, damit nichts verloren geht. */
 const EMPFAENGER = 'turnlight.de@gmail.com';
-const FORM_ZIEL = 'https://formsubmit.co/ajax/' + EMPFAENGER;
+
+/* Access Key von https://web3forms.com, ausgestellt auf EMPFAENGER. Laut
+   Web3Forms ein oeffentlicher Schluessel, ausdruecklich fuer Code im Browser
+   gedacht - er erlaubt nur das Absenden an genau diese eine Adresse und gibt
+   niemandem Zugriff auf das Postfach. Steht hier stattdessen der Platzhalter,
+   wird dieser Weg einfach uebersprungen. */
+const WEB3FORMS_KEY = 'fb231041-5fab-4617-b6a1-957de0e6f67f';
+const WEB3FORMS_BEREIT = !!WEB3FORMS_KEY && !WEB3FORMS_KEY.startsWith('HIER-');
+
+/* Reihenfolge ist Absicht: Web3Forms zuerst, sobald ein Key da ist, denn der
+   Dienst laeuft zuverlaessiger. FormSubmit braucht keinerlei Konto und ist
+   deshalb der Weg, der auch ohne jede Einrichtung funktioniert. */
+const FORM_WEGE = [
+  WEB3FORMS_BEREIT && {
+    name: 'Web3Forms',
+    ziel: 'https://api.web3forms.com/submit',
+    /* Antwortet normalerweise in unter einer Sekunde. Braucht er zehn,
+       stimmt etwas nicht, und der naechste Weg ist schneller am Ziel. */
+    geduld: 10000,
+    bauen: f => ({
+      access_key: WEB3FORMS_KEY,
+      subject: `Kontaktanfrage über TurnLight Website – ${f.Betrieb}`,
+      from_name: 'TurnLight Website',
+      email: f.email,
+      Name: f.Name, Betrieb: f.Betrieb, Telefon: f.Telefon, Stadt: f.Stadt,
+      'Anzahl Tische': f['Anzahl Tische'], Nachricht: f.Nachricht,
+    }),
+    geglueckt: (res, d) => res.ok && d.success === true,
+  },
+  {
+    name: 'FormSubmit',
+    ziel: 'https://formsubmit.co/ajax/' + EMPFAENGER,
+    /* Gemessen: der Dienst laesst eine Anfrage schon mal knapp 29 Sekunden
+       liegen, bevor er antwortet - die Verbindung steht dabei sofort, er
+       rechnet einfach lange. Eine knappe Grenze wuerde hier eine Anfrage
+       wegwerfen, die gleich zugestellt worden waere. Lieber warten. */
+    geduld: 40000,
+    bauen: f => ({
+      _subject: `Kontaktanfrage über TurnLight Website – ${f.Betrieb}`,
+      _template: 'table',
+      _captcha: 'false',
+      _honey: f._honey,
+      email: f.email,
+      Name: f.Name, Betrieb: f.Betrieb, Telefon: f.Telefon, Stadt: f.Stadt,
+      'Anzahl Tische': f['Anzahl Tische'], Nachricht: f.Nachricht,
+    }),
+    /* FormSubmit antwortet mit der Zeichenkette "true", nicht mit einem
+       Wahrheitswert - ein lockerer Vergleich waere hier eine Falle. */
+    geglueckt: (res, d) => res.ok && String(d.success) === 'true',
+  },
+].filter(Boolean);
 
 /* ---------- Nav: Trennlinie erscheint beim Scrollen ----------
    Ausnahme ist der Farbfilm: der laeuft randlos bis unter die Nav, und eine
@@ -284,6 +333,55 @@ const spy = new IntersectionObserver(entries => {
 
 /* ---------- Kontaktformular ----------
    Versand über FormSubmit, damit kein eigener Mailserver nötig ist. */
+/* Wie lange wir hoechstens auf einen Dienst warten, falls er keine eigene
+   Grenze mitbringt. Ganz ohne Grenze bliebe der Knopf bei einer ausbleibenden
+   Antwort fuer immer auf "Wird gesendet ..." stehen. */
+const FORM_GEDULD = 20000;
+
+/* Ab wann wir zugeben, dass es dauert. Ohne das starrt der Besucher einen
+   unveraenderten Knopf an und haelt die Seite fuer kaputt - genau dann wird
+   abgebrochen, obwohl die Zustellung noch laeuft. */
+const FORM_GEDULDSFADEN = 5000;
+
+/* Baut aus den Eingaben eine fertige Mail. Der Rettungsweg, falls kein Dienst
+   erreichbar ist: ein Klick, und alles Getippte steht im Mailprogramm, statt
+   verloren zu gehen. */
+function notfallMailto(f) {
+  const text = [
+    `Name: ${f.Name}`,
+    `Betrieb: ${f.Betrieb}`,
+    `E-Mail: ${f.email}`,
+    `Telefon: ${f.Telefon || '-'}`,
+    `Stadt: ${f.Stadt || '-'}`,
+    `Anzahl Tische: ${f['Anzahl Tische']}`,
+    '',
+    f.Nachricht || '',
+  ].join('\n');
+  return `mailto:${EMPFAENGER}`
+    + `?subject=${encodeURIComponent('Anfrage von ' + f.Betrieb)}`
+    + `&body=${encodeURIComponent(text)}`;
+}
+
+/* Ein Zustellversuch ueber einen Weg, mit harter Zeitgrenze. */
+async function versuchen(weg, felder) {
+  const abbruch = new AbortController();
+  const wecker = setTimeout(() => abbruch.abort(), weg.geduld || FORM_GEDULD);
+  try {
+    const res = await fetch(weg.ziel, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify(weg.bauen(felder)),
+      signal: abbruch.signal,
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!weg.geglueckt(res, data)) {
+      throw new Error(data.message || `${weg.name}: Senden fehlgeschlagen (${res.status})`);
+    }
+  } finally {
+    clearTimeout(wecker);
+  }
+}
+
 document.getElementById('contactForm').addEventListener('submit', async e => {
   e.preventDefault();
   const form = e.target;
@@ -293,24 +391,17 @@ document.getElementById('contactForm').addEventListener('submit', async e => {
   successEl.style.display = 'none';
   errorEl.style.display = 'none';
 
-  /* Der Koeder: ein fuer Menschen unsichtbares Feld. Wer es ausfuellt, ist
-     keiner – FormSubmit wirft solche Einsendungen lautlos weg. */
-  const koeder = document.getElementById('fHoney').value;
-
-  const biz = document.getElementById('fBiz').value;
-  const mail = document.getElementById('fMail').value;
-  const payload = {
-    _subject: `Kontaktanfrage über TurnLight Website – ${biz}`,
-    _template: 'table',
-    _captcha: 'false',
-    _honey: koeder,
+  const felder = {
+    /* Der Koeder: ein fuer Menschen unsichtbares Feld. Wer es ausfuellt, ist
+       keiner - solche Einsendungen werden lautlos verworfen. */
+    _honey: document.getElementById('fHoney').value,
     /* Damit eine Antwort direkt im Postfach an den Absender geht. */
-    email: mail,
+    email: document.getElementById('fMail').value,
     Name: document.getElementById('fName').value,
-    Betrieb: biz,
+    Betrieb: document.getElementById('fBiz').value,
     Telefon: document.getElementById('fPhone').value,
     Stadt: document.getElementById('fCity').value,
-    /* Massgeblich ist das Eingabefeld – es kann ueber den Reglerbereich
+    /* Massgeblich ist das Eingabefeld - es kann ueber den Reglerbereich
        hinausgehen. */
     'Anzahl Tische': fTablesNum.value || 'keine Angabe',
     Nachricht: document.getElementById('fMsg').value,
@@ -319,26 +410,39 @@ document.getElementById('contactForm').addEventListener('submit', async e => {
   const originalBtnHtml = submitBtn.innerHTML;
   submitBtn.disabled = true;
   submitBtn.textContent = 'Wird gesendet …';
+  const faden = setTimeout(() => {
+    submitBtn.textContent = 'Dauert gerade länger – bitte kurz warten …';
+  }, FORM_GEDULDSFADEN);
 
-  try {
-    const res = await fetch(FORM_ZIEL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-      body: JSON.stringify(payload),
-    });
-    const data = await res.json();
-    /* FormSubmit antwortet mit der Zeichenkette "true", nicht mit einem
-       Wahrheitswert – ein lockerer Vergleich waere hier eine Falle. */
-    if (!res.ok || String(data.success) !== 'true') {
-      throw new Error(data.message || 'Senden fehlgeschlagen');
+  let zugestellt = false;
+  for (const weg of FORM_WEGE) {
+    try {
+      await versuchen(weg, felder);
+      zugestellt = true;
+      break;
+    } catch (err) {
+      console.warn(`[TurnLight] ${weg.name} hat nicht zugestellt:`, err);
     }
+  }
+
+  clearTimeout(faden);
+
+  if (zugestellt) {
     successEl.style.display = 'block';
     submitBtn.style.display = 'none';
     form.reset();
-  } catch (err) {
-    console.error('[TurnLight] Kontaktformular:', err);
-    errorEl.style.display = 'block';
-    submitBtn.disabled = false;
-    submitBtn.innerHTML = originalBtnHtml;
+    return;
   }
+
+  console.error('[TurnLight] Kein Zustellweg erreichbar – Anfrage wird als Mail angeboten.');
+  /* Nichts geht verloren: der Hinweis traegt die Eingaben als fertige Mail
+     bei sich. */
+  const link = errorEl.querySelector('a');
+  if (link) {
+    link.href = notfallMailto(felder);
+    link.removeAttribute('target');
+  }
+  errorEl.style.display = 'block';
+  submitBtn.disabled = false;
+  submitBtn.innerHTML = originalBtnHtml;
 });
